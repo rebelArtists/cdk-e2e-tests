@@ -3,6 +3,24 @@ setup() {
     _common_setup
     load 'helpers/common'
     load 'helpers/lxly-bridge-test'
+    
+    combined_json_file="/opt/zkevm/combined.json"
+    if [ -f "$combined_json_file" ]; then
+        echo "=== Contents of $combined_json_file ==="
+        cat "$combined_json_file"
+        echo "======================================="
+    else
+        echo "File $combined_json_file not found!"
+    fi
+    
+    rollup_params_file="/opt/zkevm/create_rollup_parameters.json"
+    if [ -f "$rollup_params_file" ]; then
+        echo "=== Contents of $rollup_params_file ==="
+        cat "$rollup_params_file"
+        echo "========================================"
+    else
+        echo "File $rollup_params_file not found!"
+    fi
 
     if [ -z "$BRIDGE_ADDRESS" ]; then
         local combined_json_file="/opt/zkevm/combined.json"
