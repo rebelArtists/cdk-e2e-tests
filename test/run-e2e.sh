@@ -35,6 +35,7 @@ kurtosis run --enclave cdk --args-file "combinations/${NETWORK}.yml" --image-dow
 if [[ "$BATS_TESTS" == "all" ]]; then
     env bats test/
 else
-    env bats $BATS_TESTS
+    # Convert comma-separated list to space-separated and prepend "test/" to each file
+    BATS_TESTS_LIST=$(echo "$BATS_TESTS" | tr ',' ' ' | sed 's~[^ ]*~test/&~g')
+    env bats $BATS_TESTS_LIST
 fi
-
