@@ -13,14 +13,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - network: "fork9-validium"
+          - network: "fork9-cdk-validium"
             bats_tests: "batch-verification.bats,access-list-e2e.bats"
             gas_token_address: "0x72ae2643518179cF01bcA3278a37ceAD408DE8b2"
 
           - network: "fork11-rollup"
             bats_tests: "batch-verification.bats,eoa-transaction.bats"
 
-          - network: "fork12-validium"
+          - network: "fork12-cdk-validium"
             bats_tests: "batch-verification.bats,erc20-tests.bats"
 
           - network: "fork12-rollup"
