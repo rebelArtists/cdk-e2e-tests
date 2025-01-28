@@ -32,10 +32,14 @@ cp "$BASE_FOLDER/config/kurtosis-cdk-node-config.toml.template" "$KURTOSIS_FOLDE
 kurtosis run --enclave cdk --args-file "combinations/${NETWORK}.yml" --image-download always "$KURTOSIS_FOLDER"
 
 # Run selected tests with exported environment variables
+# Run selected tests with exported environment variables
 if [[ "$BATS_TESTS" == "all" ]]; then
     env bats test/
 else
-    # Convert comma-separated list to space-separated and prepend "test/" to each file
-    BATS_TESTS_LIST=$(echo "$BATS_TESTS" | tr ',' ' ' | sed 's~[^ ]*~test/&~g')
+    # Ensure proper space separation & trimming
+    BATS_TESTS_LIST=$(echo "$BATS_TESTS" | tr ',' '\n' | xargs -I {} echo "test/{}" | tr '\n' ' ')
+    echo "Running BATS tests: $BATS_TESTS_LIST"
+    
+    # Execute tests with `env`
     env bats $BATS_TESTS_LIST
 fi
