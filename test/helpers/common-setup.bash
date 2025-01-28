@@ -10,7 +10,7 @@ _common_setup() {
     PROJECT_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." >/dev/null 2>&1 && pwd)"
     # make executables in src/ visible to PATH
     PATH="$PROJECT_ROOT/src:$PATH"
-    GAS_TOKEN_ADDR="0x72ae2643518179cF01bcA3278a37ceAD408DE8b2"
+    GAS_TOKEN_ADDR="${GAS_TOKEN_ADDR:-0x72ae2643518179cF01bcA3278a37ceAD408DE8b2}"
 
     # ERC20 contracts function signatures
     readonly mint_fn_sig="function mint(address,uint256)"

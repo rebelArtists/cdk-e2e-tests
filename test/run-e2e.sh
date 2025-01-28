@@ -1,21 +1,14 @@
 #!/bin/bash
-set -euo pipefail  # Enable strict error handling
+set -euo pipefail  
 
-# Load shared environment variables
-source $(dirname $0)/scripts/env.sh
+source $(dirname $0)/scripts/env.sh  # Load shared env vars
 
-# Validate arguments
-FORK=$1
-if [ -z "$FORK" ]; then
-    echo "Error: Missing FORK argument. Expected values: ['fork9', 'fork12', 'fork11']"
-    exit 1
-fi
+# Allow users to specify variables dynamically
+export NETWORK="${NETWORK:-fork12-rollup}"
+export BATS_TESTS="${BATS_TESTS:-all}"
 
-DATA_AVAILABILITY_MODE=$2
-if [ -z "$DATA_AVAILABILITY_MODE" ]; then
-    echo "Error: Missing DATA_AVAILABILITY_MODE argument. Expected values: ['rollup', 'cdk-validium']"
-    exit 1
-fi
+# Allow env var inputs (including L2_ETH_RPC_URL)
+export GAS_TOKEN_ADDR="${GAS_TOKEN_ADDR:-0x72ae2643518179cF01bcA3278a37ceAD408DE8b2}"
 
 # Define the base folder
 BASE_FOLDER=$(dirname $0)
@@ -26,14 +19,22 @@ if ! command -v kurtosis &> /dev/null; then
     exit 1
 fi
 
-# Clean up any stale Kurtosis enclaves
-echo "Cleaning up old Kurtosis enclaves..."
+echo "Running tests for network: $NETWORK"
+echo "Using L2_RPC_URL: $L2_ETH_RPC_URL"
+echo "Using GAS_TOKEN_ADDR: $GAS_TOKEN_ADDR"
+
+# Start Kurtosis with the selected network
 kurtosis clean --all
 
-# Override the cdk config file
 echo "Overriding cdk config file..."
 cp "$BASE_FOLDER/config/kurtosis-cdk-node-config.toml.template" "$KURTOSIS_FOLDER/templates/trusted-node/cdk-node-config.toml"
 
-# Run the Kurtosis test environment
-echo "Running Kurtosis with combination: $FORK-$DATA_AVAILABILITY_MODE.yml"
-kurtosis run --enclave cdk --args-file "combinations/$FORK-$DATA_AVAILABILITY_MODE.yml" --image-download always "$KURTOSIS_FOLDER"
+kurtosis run --enclave cdk --args-file "combinations/${NETWORK}.yml" --image-download always "$KURTOSIS_FOLDER"
+
+# Run selected tests with exported environment variables
+if [[ "$BATS_TESTS" == "all" ]]; then
+    env bats test/
+else
+    env bats $BATS_TESTS
+fi
+
