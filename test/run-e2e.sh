@@ -13,14 +13,15 @@ export GAS_TOKEN_ADDR="${GAS_TOKEN_ADDR:-0x72ae2643518179cF01bcA3278a37ceAD408DE
 # Define the base folder
 BASE_FOLDER=$(dirname $0)
 
-# Validate the Kurtosis CLI is installed
-if ! command -v kurtosis &> /dev/null; then
-    echo "Error: Kurtosis CLI not found. Please install it before running this script."
-    exit 1
+# Detect if we are already in the `test/` folder in CI
+if [[ "$(basename $PWD)" == "test" ]]; then
+    echo "Detected CI working directory is already 'test/'"
+    TEST_DIR="."
+else
+    TEST_DIR="test"
 fi
 
 echo "Running tests for network: $NETWORK"
-echo "Using L2_RPC_URL: $L2_ETH_RPC_URL"
 echo "Using GAS_TOKEN_ADDR: $GAS_TOKEN_ADDR"
 
 # Start Kurtosis with the selected network
@@ -32,12 +33,12 @@ cp "$BASE_FOLDER/config/kurtosis-cdk-node-config.toml.template" "$KURTOSIS_FOLDE
 kurtosis run --enclave cdk --args-file "combinations/${NETWORK}.yml" --image-download always "$KURTOSIS_FOLDER"
 
 # Run selected tests with exported environment variables
-# Run selected tests with exported environment variables
 if [[ "$BATS_TESTS" == "all" ]]; then
-    env bats test/
+    echo "Running all tests from $TEST_DIR/"
+    env bats "$TEST_DIR/"
 else
     # Ensure proper space separation & trimming
-    BATS_TESTS_LIST=$(echo "$BATS_TESTS" | tr ',' '\n' | xargs -I {} echo "test/{}" | tr '\n' ' ')
+    BATS_TESTS_LIST=$(echo "$BATS_TESTS" | tr ',' '\n' | xargs -I {} echo "$TEST_DIR/{}" | tr '\n' ' ')
     echo "Running BATS tests: $BATS_TESTS_LIST"
     
     # Execute tests with `env`
